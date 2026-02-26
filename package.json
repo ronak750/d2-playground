@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@terrastruct/d2": "^0.1.33",

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { useD2 } from './hooks/useD2';
-import { Share2, Download, Play, Github } from 'lucide-react';
+import { Share2, Download, Play, Github, Sparkles, Send, Loader2 } from 'lucide-react';
+import { generateD2Script } from './services/gemini';
 
 const INITIAL_CODE = `# Welcome to D2 Playground!
 # Try editing this script to see the changes.
@@ -62,7 +63,29 @@ costumes.monster -> monsters.id`,
 
 function App() {
   const [code, setCode] = useState(INITIAL_CODE);
+  const [prompt, setPrompt] = useState('');
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const { render, svg, error, isCompiling } = useD2();
+
+  const handleAIGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prompt.trim() || isAILoading) return;
+
+    setIsAILoading(true);
+    setAiError(null);
+    try {
+      const result = await generateD2Script(prompt, code === INITIAL_CODE ? undefined : code);
+      setCode(result);
+      render(result);
+      setPrompt(''); // Clear prompt after successful generation
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Failed to generate diagram');
+      console.error(err);
+    } finally {
+      setIsAILoading(false);
+    }
+  };
 
   const loadExample = (key: keyof typeof EXAMPLES) => {
     const exampleCode = EXAMPLES[key];
@@ -152,6 +175,44 @@ function App() {
           </a>
         </div>
       </header>
+
+      {/* AI Prompt Bar */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3">
+        <form onSubmit={handleAIGenerate} className="max-w-4xl mx-auto flex gap-3">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <Sparkles className="h-4 w-4 text-blue-500" />
+            </div>
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your diagram... (e.g., 'Add a cache between API and Database')"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+              disabled={isAILoading}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isAILoading || !prompt.trim()}
+            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] justify-center"
+          >
+            {isAILoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                Generate
+              </>
+            )}
+          </button>
+        </form>
+        {aiError && (
+          <div className="max-w-4xl mx-auto mt-2 text-xs text-red-500 flex items-center gap-1">
+            <span>Error: {aiError}</span>
+          </div>
+        )}
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 flex overflow-hidden">
