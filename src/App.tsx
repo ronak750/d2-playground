@@ -177,25 +177,29 @@ function App() {
       </header>
 
       {/* AI Prompt Bar */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3">
-        <form onSubmit={handleAIGenerate} className="max-w-4xl mx-auto flex gap-3">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <form onSubmit={handleAIGenerate} className="max-w-4xl mx-auto flex items-end gap-3">
           <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <div className="absolute top-3 left-3 pointer-events-none">
               <Sparkles className="h-4 w-4 text-blue-500" />
             </div>
-            <input
-              type="text"
+            <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe your diagram... (e.g., 'Add a cache between API and Database')"
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  handleAIGenerate(e);
+                }
+              }}
+              placeholder="Describe your diagram in detail... (e.g., 'Add a cache between API and Database'. Press Cmd+Enter to generate)"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm min-h-[80px] resize-y"
               disabled={isAILoading}
             />
           </div>
           <button
             type="submit"
             disabled={isAILoading || !prompt.trim()}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] justify-center"
+            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] justify-center mb-1"
           >
             {isAILoading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -240,6 +244,8 @@ function App() {
       {/* Footer */}
       <footer className="px-6 py-2 bg-white border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
         <div className="flex items-center gap-4">
+          <span>Created by Katta</span>
+          <span>•</span>
           <span>Powered by @terrastruct/d2</span>
           <span>•</span>
           <a href="https://d2lang.com/tour/intro/" target="_blank" className="hover:text-blue-600 transition-colors">D2 Documentation</a>
